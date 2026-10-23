@@ -1,0 +1,253 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球壇戀人｜互動文字遊戲</title>
+<style>
+:root{--bg:#100f1c;--panel:#1c1a2d;--panel2:#27233d;--pink:#ff8fb8;--gold:#f7d58b;--lav:#c6b7ff;--text:#f8f4ff;--muted:#c4bdd7;--line:#514766;--green:#a8e6cf}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#302344 0,#100f1c 58%);color:var(--text);font-family:"Microsoft JhengHei",system-ui,sans-serif;line-height:1.8}
+.wrap{max-width:980px;margin:auto;padding:22px 16px 60px}
+header{text-align:center;padding:24px 12px 20px}
+.kicker{color:var(--gold);letter-spacing:.18em;font-size:.82rem}
+h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.25;margin:8px 0;color:#fff;text-shadow:0 0 24px #ff8fb866}
+.subtitle{color:var(--muted);max-width:680px;margin:0 auto}
+.panel{background:linear-gradient(145deg,#211d35ee,#171525f5);border:1px solid var(--line);border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 12px 34px #0003}
+h2{font-size:1.35rem;color:var(--pink);margin:0 0 12px}
+h3{color:var(--gold);margin:12px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.panel{padding:17px}}
+label{display:block;color:var(--muted);font-size:.92rem;margin:8px 0 4px}
+input,select,textarea{width:100%;padding:12px 13px;background:#100f1c;color:var(--text);border:1px solid #5a4d72;border-radius:10px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+button{font:inherit;cursor:pointer;border:1px solid #78628e;border-radius:12px;padding:11px 15px;background:#302844;color:var(--text);transition:.15s}
+button:hover{transform:translateY(-1px);border-color:var(--pink);background:#40304f}
+button.primary{background:linear-gradient(120deg,#e878a8,#9c7ae8);border:0;color:#190f25;font-weight:800}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.pill{border:1px solid #625476;background:#28233a;border-radius:99px;padding:5px 11px;color:#e9defb;font-size:.88rem}
+.notice{border-left:3px solid var(--gold);padding:8px 12px;background:#f7d58b12;color:#e8dfef;border-radius:0 8px 8px 0}
+.story{font-size:1.02rem;white-space:pre-line}
+.choice{display:block;text-align:left;width:100%;margin:9px 0;padding:13px 15px;background:#252139;border-color:#514766}
+.choice strong{color:var(--gold);margin-right:8px}
+.phone{font-family:"Microsoft JhengHei",sans-serif;background:#0b0b12;border:2px solid #77658e;border-radius:28px;max-width:520px;margin:12px auto;padding:18px;box-shadow:inset 0 0 0 4px #201a2b}
+.phone-top{display:flex;justify-content:space-between;color:#ddd4ed;font-size:.85rem;border-bottom:1px solid #383044;padding-bottom:10px}
+.appgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.app{min-height:80px;background:#201b2d;border-radius:14px;text-align:center;padding:12px 5px;border:1px solid #413450}
+.app span{display:block;font-size:1.6rem}
+.phone-card{background:#1c1828;border-radius:12px;padding:12px;margin:10px 0}
+.small{font-size:.88rem;color:var(--muted)}
+.hidden{display:none!important}
+footer{text-align:center;color:#948aa9;font-size:.82rem;margin-top:28px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">⚽ 都市戀愛・選擇敘事・回合制</div>
+  <h1>💌 球壇戀人</h1>
+  <p class="subtitle">在聚光燈、賽程與秘密之間，寫下只屬於你的戀愛故事。每一次選擇都會改變後續發展。</p>
+</header>
+
+<section id="setup" class="panel">
+  <h2>🌷 建立你的故事</h2>
+  <p class="notice">本遊戲是虛構互動故事。若選擇現實球星，劇情中的戀情、私訊與私生活均為虛構，不代表現實情況。</p>
+  <div class="grid">
+    <div><label for="playerName">你的姓名</label><input id="playerName" placeholder="例如：林予安"></div>
+    <div><label for="nationality">國籍</label><input id="nationality" placeholder="例如：中國"></div>
+    <div><label for="age">年齡（角色須滿十八歲）</label><input id="age" type="number" min="18" max="60" value="24"></div>
+    <div><label for="identity">你的身份</label><select id="identity">
+      <option>普通素人</option><option>球隊公關</option><option>時尚造型師</option><option>演員／歌手</option><option>體育經紀人</option><option>攝影師</option><option>品牌製作人</option><option>富裕家族出身</option><option>球隊粉絲</option>
+    </select></div>
+    <div><label for="star">球星男友</label><select id="star">
+      <option>基利安・姆巴佩（巴黎聖日耳曼／皇家馬德里）</option>
+      <option>裘德・貝林厄姆（皇家馬德里）</option>
+      <option>哈里・凱恩（拜仁慕尼黑）</option>
+      <option>拉明・亞馬爾（巴塞隆納）</option>
+      <option>佩德里（巴塞隆納）</option>
+      <option>埃爾林・哈蘭德（曼城）</option>
+      <option>布卡約・薩卡（阿森納）</option>
+      <option>尼科・施洛特貝克（多特蒙德）</option>
+      <option>自訂球星</option>
+    </select></div>
+    <div><label for="customStar">自訂球星（選擇自訂時填寫）</label><input id="customStar" placeholder="輸入球星姓名"></div>
+    <div><label for="hisNick">他對你的愛稱</label><input id="hisNick" placeholder="例如：寶貝、親愛的"></div>
+    <div><label for="myNick">你對他的愛稱</label><input id="myNick" placeholder="例如：親愛的、他的名字"></div>
+    <div><label for="meeting">你希望的相遇方式</label><select id="meeting">
+      <option>球隊慈善晚宴</option><option>朋友聚會偶然相識</option><option>工作合作初次見面</option><option>球場看台意外相遇</option><option>品牌活動後台</option><option>由共同朋友介紹</option><option>隨機決定</option>
+    </select></div>
+  </div>
+  <label for="goal">你目前最想追求的個人目標（選填）</label>
+  <input id="goal" placeholder="例如：建立自己的造型工作室、完成學業、在歐洲找到工作">
+  <div class="actions"><button class="primary" id="createBtn">✨ 生成初始設定與相遇劇情</button></div>
+  <p class="small">故事背景：二〇二五年。所有角色均為成年人；玩家可以自訂選項，也可以拒絕任何親密互動。</p>
+</section>
+
+<section id="intro" class="panel hidden">
+  <h2>📖 第一回合前｜你們的故事開始之前</h2>
+  <div id="profile" class="pills"></div>
+  <div id="introStory" class="story"></div>
+  <hr>
+  <h3>💗 這就是你們的起點嗎？</h3>
+  <p>確認後，正式進入第一回合。你可以選擇自由行動、查看手機，並逐步面對球壇生活與感情中的各種變化。</p>
+  <div class="actions"><button class="primary" id="confirmBtn">確認設定，進入第一回合</button><button id="backBtn">返回修改設定</button></div>
+</section>
+
+<section id="game" class="hidden">
+  <div class="panel">
+    <div class="pills"><span class="pill" id="roundPill">第一回合</span><span class="pill" id="datePill">二〇二五年六月</span><span class="pill">📍你的視角</span></div>
+    <h2 id="sceneTitle">🌆 自由行動</h2>
+    <div id="scene" class="story"></div>
+    <div id="gameChoices"></div>
+    <div id="customActionBox" class="hidden">
+      <label for="customAction">描述你想做的事或說的話</label>
+      <textarea id="customAction" placeholder="請輸入你自己的行動或對話……"></textarea>
+      <div class="actions"><button class="primary" id="submitCustom">執行自訂行動</button></div>
+    </div>
+  </div>
+  <div id="phonePanel" class="panel hidden">
+    <h2>📱 手機</h2>
+    <div class="phone">
+      <div class="phone-top"><span id="phoneTime">14:25</span><span>📶　🔋 85%</span></div>
+      <div id="phoneHome">
+        <h3 style="text-align:center">手機主畫面</h3>
+        <div class="appgrid">
+          <button class="app" data-app="社群動態"><span>📸</span>社群動態</button>
+          <button class="app" data-app="即時訊息"><span>💬</span>即時訊息</button>
+          <button class="app" data-app="影音平台"><span>▶️</span>影音平台</button>
+          <button class="app" data-app="新聞熱搜"><span>📰</span>新聞熱搜</button>
+          <button class="app" data-app="相簿"><span>🖼️</span>相簿</button>
+          <button class="app" data-app="行事曆"><span>🗓️</span>行事曆</button>
+        </div>
+        <p class="small">選擇應用程式查看內容。輸入「繼續」的效果是按下返回遊戲。</p>
+      </div>
+      <div id="phoneContent" class="hidden"></div>
+      <div class="actions"><button id="phoneBack">返回手機主畫面</button><button class="primary" id="phoneContinue">繼續遊戲</button></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>🧭 本回合記錄</h2>
+    <div id="log" class="small">故事將隨你的選擇逐步展開。</div>
+    <div class="actions"><button id="nextRound" class="primary" disabled>進入下一段時間</button><button id="openPhone">📱 手機</button></div>
+  </div>
+</section>
+<footer>球壇戀人｜互動文字遊戲原型　✦　虛構故事，不代表現實人物私生活</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let state={round:0,player:{},phase:"setup",actionsLeft:2,chosen:[],phoneApp:"",eventStep:0,storyLog:[],pregnancy:false,relationship:"秘密交往"};
+const months=["六月","六月","六月","七月","七月","七月","八月","八月","九月","九月","十月","十月","十一月","十一月","十二月"];
+const events=[
+ {title:"🌙 深夜的訊息",text:"夜色落在窗邊，手機忽然亮起。他剛結束訓練，傳來一張更衣室外走廊的照片。訊息很短：「今天忙到現在。你睡了嗎？」",choices:["回覆他，問他今天過得怎麼樣。","告訴他你也有自己的安排，晚點再聊。","直接打電話給他。","先不回覆，看看他會不會再傳訊息。"]},
+ {title:"📸 被拍到的瞬間",text:"你們在餐廳後門分開時，遠處似乎有鏡頭閃了一下。隔天早上，社群上出現一張模糊的背影照片，留言正在猜測照片中的人是誰。",choices:["先截圖保存，暫時不回應。","傳訊息問他和經紀團隊打算怎麼處理。","請朋友幫忙確認照片是否已被轉傳。","主動發一則與工作有關的動態，轉移注意。"]},
+ {title:"⚽ 比賽日",text:"比賽當天，手機推送不斷跳出。你坐在看台較不顯眼的位置，周圍的人都在討論他的狀態。終場哨聲響起後，你收到一則訊息：「我想見你，但今晚可能走不開。」",choices:["告訴他你可以等他忙完。","理解他的行程，先回家休息。","問他能否安排一個確定的見面時間。","把注意力放回自己的工作與朋友。"]},
+ {title:"🥂 慶祝晚宴",text:"球隊的慶祝晚宴安排在市中心飯店。你受邀以自己的身份出席，但現場有記者、贊助商和不少熟悉的面孔。工作人員提醒你，合照可能會被公開。",choices:["低調出席，避免單獨同框。","以工作身份自然參與活動。","先和他確認彼此的界線。","婉拒邀請，安排自己的夜晚。"]},
+ {title:"💌 忙碌中的想念",text:"你們已經好幾天沒有好好相處。他傳來語音，背景裡有人催促他上車。他說：「等這段行程結束，我想留一整天給你。」",choices:["告訴他你很期待，也說出自己的需要。","不想增加他的壓力，只回覆一個擁抱表情。","提出先安排短暫見面，不再一直等待。","坦白說，你最近也有些疲憊。"]},
+ {title:"🗞️ 熱搜上的名字",text:"早晨的熱門話題裡，有人把他與一位合作活動的模特兒放在同一張拼圖中。內容沒有確切證據，卻被大量轉發。你的朋友把連結傳來，問你還好嗎。",choices:["先看完整內容，不急著下結論。","直接問他活動的實際情況。","和朋友聊聊，整理自己的感受。","暫時關掉社群，專心處理今天的事。"]},
+ {title:"🌧️ 臨時取消的約會",text:"原本約好的晚餐，在出門前一小時被取消。他傳來訊息，說臨時增加了球隊安排。你已經換好衣服，桌上的訂位確認還亮著。",choices:["告訴他你失望，但願意另約時間。","問他能否至少打電話說明。","取消訂位，自己出門散心。","直接說出你不想一直被臨時取消約會。"]},
+ {title:"🎁 一份低調的禮物",text:"門鈴響起，外送員送來一個沒有署名的紙袋。裡面是你前幾天提過的東西，附著一張簡短卡片：「希望今天能讓你開心一點。」",choices:["傳訊息向他道謝。","先確認寄件資訊，再回覆。","拍下禮物收進相簿，不公開分享。","等下次見面時親口向他道謝。"]},
+ {title:"👥 朋友的邀約",text:"一位朋友邀你參加週末聚會，幾位新朋友也會到場。你原本預留了時間等他的行程通知，但目前還沒有收到確定消息。",choices:["答應朋友，照常安排自己的生活。","先詢問他週末是否有空。","告訴朋友你的時間還不確定。","把週末留給自己，休息和整理工作。"]},
+ {title:"🏟️ 賽後短暫相見",text:"比賽結束後，他透過熟識的工作人員告訴你，可以在車子離開前見幾分鐘。走廊裡人來人往，他摘下帽子，低聲問你：「最近好嗎？」",choices:["笑著抱抱他，問他累不累。","告訴他你有些話想找時間好好說。","先關心他的身體狀況與比賽。","坦白說你不喜歡每次都只能匆匆見面。"]}
+];
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function create(){
+ const age=Number($("age").value);
+ if(!age||age<18){alert("請設定十八歲以上的角色年齡。");return}
+ let star=$("star").value;if(star==="自訂球星")star=$("customStar").value.trim()||"你自訂的球星";
+ state.player={name:$("playerName").value.trim()||"林予安",nationality:$("nationality").value.trim()||"中國",age,identity:$("identity").value,star,hisNick:$("hisNick").value.trim()||"寶貝",myNick:$("myNick").value.trim()||"親愛的",meeting:$("meeting").value,goal:$("goal").value.trim()||"慢慢找到自己想走的路"};
+ const p=state.player;
+ $("profile").innerHTML=[`👤 ${esc(p.name)}`,`🌏 ${esc(p.nationality)}`,`🎂 ${p.age}歲`,`💼 ${esc(p.identity)}`,`⚽ ${esc(p.star)}`,`💗 彼此愛稱：${esc(p.myNick)}／${esc(p.hisNick)}`].map(x=>`<span class="pill">${x}</span>`).join("");
+ let meet=p.meeting==="隨機決定"?rand(["球隊慈善晚宴","朋友聚會偶然相識","工作合作初次見面","球場看台意外相遇","品牌活動後台"]):p.meeting;
+ let scene="";
+ if(meet==="球隊慈善晚宴")scene=`那是二〇二五年初夏的一場慈善晚宴。你因為${p.identity}的工作邀請來到會場，水晶燈映在酒杯上，四周是低聲交談與相機快門。你原本只想完成今晚的工作，卻在轉過走廊時，和${p.star}迎面相遇。你手中的資料差點散落，他伸手替你扶住，禮貌地問：「沒事吧？」`;
+ else if(meet==="朋友聚會偶然相識")scene=`那晚你受朋友邀請，去了市中心一間安靜的餐廳。你以為只是普通聚會，直到朋友把你介紹給${p.star}。他剛結束一天行程，穿著簡單，說話不多。你們先聊起旅行和工作，直到其他人換了話題，他才問你：「下次有機會，可以再聊聊嗎？」`;
+ else if(meet==="工作合作初次見面")scene=`你因為${p.identity}的工作，參與了一場與球隊及品牌有關的合作。現場時間緊湊，工作人員來回確認流程。${p.star}在休息空檔向你道謝，注意到你仍在整理細節，便留下來多問了幾句。那次談話沒有戲劇性的告白，只是從工作開始，慢慢有了下一次聯絡的理由。`;
+ else if(meet==="球場看台意外相遇")scene=`你來到球場看比賽，終場後因為走錯出口，來到一條工作人員通行的走廊。你正準備道歉離開，${p.star}恰好從另一端走來。短暫的混亂後，他確認你沒有受傷，還主動請工作人員帶你回到正確出口。離開前，他問你是否願意留下聯絡方式，讓他確認你平安到家。`;
+ else scene=`你因為${p.identity}的身份出現在一場品牌活動後台。燈光、服裝和工作人員交錯忙碌，你正核對最後一項流程，${p.star}走過來詢問活動安排。你們從工作聊到生活，發現彼此意外地聊得來。活動結束時，他沒有急著離開，而是問你：「如果不打擾你，我可以再聯絡你嗎？」`;
+ $("introStory").textContent=`【初始設定】\n二〇二五年｜初夏｜故事起點\n\n${scene}\n\n接下來幾週，你們開始以訊息聯絡。最初只是簡短的問候、分享忙碌的一天，後來變成睡前的語音和偶爾匆匆安排的見面。某個夜晚，他終於認真地問你，能不能把這段關係留在兩個人之間，至少暫時不要公開。\n\n你還不知道這段感情會走向哪裡。你有自己的生活、工作與目標——${p.goal}。而從今天起，你的每一次回應，都可能讓故事走向不同方向。\n\n【關係起點】秘密交往｜尚未公開｜由你的選擇決定未來`;
+ $("setup").classList.add("hidden");$("intro").classList.remove("hidden");
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function startGame(){ $("intro").classList.add("hidden");$("game").classList.remove("hidden");state.round=1;state.actionsLeft=2;state.chosen=[];renderRound(true);window.scrollTo({top:0,behavior:"smooth"})}
+function renderRound(first=false){
+ $("roundPill").textContent=`第${state.round}回合`;
+ $("datePill").textContent=`二〇二五年${months[Math.min(state.round-1,months.length-1)]}`;
+ $("sceneTitle").textContent=first?"🌷 自由行動":"🌙 時間向前";
+ $("scene").textContent=first?`下午兩點二十五分。你在自己的住處整理今天的行程，手機裡還留著他昨晚傳來的訊息。你們的關係仍然低調，見面需要配合他的訓練、比賽與工作安排。\n\n今天，你有兩個行動機會。你可以處理自己的生活、聯絡他，或打開手機看看最新動態。完成自由行動後，才會進入本回合的隨機事件。`:`幾天過去了。你依照自己的安排忙完一輪，新的訊息和工作邀約接連出現。你們仍在摸索彼此的節奏，今天又會發生什麼事？`;
+ $("gameChoices").innerHTML="";$("customActionBox").classList.add("hidden");$("nextRound").disabled=true;state.actionsLeft=2;state.chosen=[];
+ if(first)showActions();else triggerEvent();
+}
+function showActions(){
+ $("sceneTitle").textContent=`🌷 自由行動｜剩餘行動：${state.actionsLeft}`;
+ const acts=[["A","傳訊息給他","你主動聯絡男友，看看他是否有空。"],["B","處理自己的工作","你把時間留給工作與自己的目標。"],["C","學習當地語言","你安排一段時間學習日常用語。"],["D","和朋友見面","你回覆朋友的邀約，維持自己的社交生活。"],["E","休息或出門散心","你暫時放下手機，照顧自己的狀態。"],["F","📱 手機","查看社群動態、訊息、新聞或行事曆。"],["G","自訂行動","自己決定要做什麼、說什麼。"]];
+ $("gameChoices").innerHTML=acts.map(a=>`<button class="choice" data-act="${a[0]}"><strong>${a[0]}.</strong>${a[1]}<div class="small">${a[2]}</div></button>`).join("");
+ $("gameChoices").querySelectorAll("button").forEach(b=>b.onclick=()=>doAction(b.dataset.act));
+}
+function doAction(a){
+ if(a==="F"){openPhone();return}
+ if(a==="G"){$("customActionBox").classList.remove("hidden");return}
+ const texts={A:"你傳訊息給他，簡單問候近況。過了一會兒，訊息顯示已送達。",B:"你專心處理工作，完成了原本排定的一部分事項。",C:"你練習了一些日常用語，並把不熟悉的句子記在筆記裡。",D:"你和朋友聊了近況，也談到接下來的工作安排。",E:"你讓自己休息了一會兒，出門走走，心情逐漸放鬆。"};
+ state.chosen.push(texts[a]);state.actionsLeft--;addLog(texts[a]);
+ if(state.actionsLeft>0)showActions();else finishActions();
+}
+$("submitCustom").onclick=()=>{let t=$("customAction").value.trim();if(!t){alert("請先輸入你的行動或對話。");return}state.chosen.push(`你決定：${t}`);addLog(`你決定：${t}`);$("customAction").value="";$("customActionBox").classList.add("hidden");state.actionsLeft--;if(state.actionsLeft>0)showActions();else finishActions()};
+function finishActions(){$("sceneTitle").textContent="🌟 自由行動完成";$("scene").textContent="你完成了今天安排的自由行動。稍作休息後，新的事件打破了原本的節奏。";$("gameChoices").innerHTML="";triggerEvent()}
+function triggerEvent(){
+ const e=rand(events);state.currentEvent=e;state.eventStep=0;$("sceneTitle").textContent=`🎲 隨機事件｜${e.title}`;$("scene").textContent=e.text;
+ $("gameChoices").innerHTML=e.choices.map((c,i)=>`<button class="choice" data-choice="${i}"><strong>${"ABCD"[i]}.</strong>${esc(c)}</button>`).join("")+`<button class="choice" id="customChoice"><strong>E.</strong>自訂回應<div class="small">由你決定要說的話或採取的行動。</div></button>`;
+ $("gameChoices").querySelectorAll("[data-choice]").forEach(b=>b.onclick=()=>chooseEvent(Number(b.dataset.choice)));
+ $("customChoice").onclick=()=>{$("customActionBox").classList.remove("hidden");$("submitCustom").onclick=submitCustomEvent};
+}
+function chooseEvent(i){
+ const choice=state.currentEvent.choices[i];addLog(`你選擇：${choice}`);
+ $("sceneTitle").textContent="💬 事件後續";
+ $("scene").textContent=followup(i);
+ $("gameChoices").innerHTML=`<p class="notice">你已經做出選擇。事件尚未完全結束，請選擇接下來的回應。</p>`+
+ [`「我想聽聽你的想法。」`,`「我們晚點再談，我需要一點時間。」`,`「我希望我們可以把事情說清楚。」`,`「我先處理自己的安排，之後再聯絡。」`].map((c,j)=>`<button class="choice" data-follow="${j}"><strong>${"ABCD"[j]}.</strong>${c}</button>`).join("");
+ $("gameChoices").querySelectorAll("[data-follow]").forEach(b=>b.onclick=()=>endEvent(Number(b.dataset.follow)));
+}
+function followup(i){
+ const lines=[
+ "你把訊息送出去後，手機安靜了一陣子。稍後，他回覆了幾句近況，並問你今天是否順利。你們還有很多事情需要協調，但至少這次沒有匆匆結束對話。",
+ "你沒有立刻回應。你把注意力放回眼前的事，過了一會兒，手機亮起，他補了一句：「等你有空，我們再好好聊。」",
+ "電話接通後，周圍的聲音有些嘈雜。他先向你道歉，接著說明自己眼下的安排。你們終於有機會把原本零碎的訊息說得更清楚。",
+ "你暫時沒有追問。夜色慢慢沉下來，你照常完成自己的行程，卻也發現這段關係需要你主動說出真正的需求。"
+ ];
+ return lines[i%lines.length];
+}
+function submitCustomEvent(){let t=$("customAction").value.trim();if(!t){alert("請輸入你的回應。");return}addLog(`你的自訂回應：${t}`);$("customAction").value="";$("customActionBox").classList.add("hidden");endEvent(0)}
+function endEvent(i){addLog(["你們約好找時間再談。","你決定先給彼此一些空間。","你把自己的想法說清楚。","你先回到自己的生活節奏。"][i]);$("sceneTitle").textContent="🌙 本回合事件結束";$("scene").textContent="這件事暫時告一段落。你沒有辦法預先知道所有結果，只能在往後的相處中，慢慢看清彼此的選擇。";$("gameChoices").innerHTML="";$("nextRound").disabled=false;$("customActionBox").classList.add("hidden")}
+function addLog(t){state.storyLog.unshift(`・${t}`);$("log").innerHTML=state.storyLog.slice(0,8).map(esc).join("<br>")}
+$("nextRound").onclick=()=>{state.round++;renderRound(false);window.scrollTo({top:0,behavior:"smooth"})};
+$("openPhone").onclick=openPhone;
+function openPhone(){$("phonePanel").classList.remove("hidden");$("phoneHome").classList.remove("hidden");$("phoneContent").classList.add("hidden");$("phoneTime").textContent=state.round%2?"14:25":"21:40";$("phonePanel").scrollIntoView({behavior:"smooth",block:"center"})}
+document.querySelectorAll("[data-app]").forEach(b=>b.onclick=()=>showApp(b.dataset.app));
+function showApp(app){
+ $("phoneHome").classList.add("hidden");$("phoneContent").classList.remove("hidden");
+ const content={
+ "社群動態":`<h3>📸 社群動態</h3><div class="phone-card">🔥 熱門話題<br>球隊賽後分享、夏日穿搭、城市餐廳新店開幕。</div><div class="phone-card">⭐ 你關注的球星發布了新動態<br>照片是球場草地與一雙沾著草屑的球鞋。文字寫著：「繼續努力。」</div><div class="phone-card">💬 朋友留言<br>「這週末要不要一起吃飯？」</div><label>發布一則動態</label><textarea id="postText" placeholder="寫下你想分享的內容……"></textarea><button class="primary" onclick="publishPost()">發布</button><div id="postResult"></div>`,
+ "即時訊息":`<h3>💬 即時訊息</h3><div class="phone-card"><b>${esc(state.player.star)}</b><br>「今天行程排得很滿，結束後再找你。你也要記得吃飯。」</div><div class="phone-card"><b>好友小雅</b><br>「最近都沒見到你！週末留點時間給自己吧。」</div><label>回覆訊息</label><textarea id="msgText" placeholder="輸入你想傳送的訊息……"></textarea><button class="primary" onclick="sendMsg()">送出訊息</button><div id="msgResult"></div>`,
+ "影音平台":`<h3>▶️ 影音平台</h3><div class="phone-card">⚽ 賽後精華：本週聯賽精彩片段</div><div class="phone-card">🎥 球隊公開訓練花絮：球員分享比賽準備</div><div class="phone-card">🎬 城市生活推薦：一個人也能享受的週末</div>`,
+ "新聞熱搜":`<h3>📰 新聞與熱門話題</h3><div class="phone-card">⚽ 球隊公布下一場比賽的時間安排。</div><div class="phone-card">📣 品牌活動釋出現場照片，參與者留言熱烈。</div><div class="phone-card">🗞️ 網路出現未經證實的猜測。內容尚無可靠證據，請勿直接當成事實。</div>`,
+ "相簿":`<h3>🖼️ 相簿</h3><div class="phone-card">🌆 城市夜景｜上週散步時拍下的照片</div><div class="phone-card">☕ 咖啡店角落｜和朋友見面時的紀錄</div><div class="phone-card">🎟️ 比賽門票｜你留作紀念的小物</div>`,
+ "行事曆":`<h3>🗓️ 行事曆</h3><div class="phone-card">今天 16:00｜工作／個人安排</div><div class="phone-card">明天｜依照球隊公開賽程安排的行程</div><div class="phone-card">週末｜尚未確定的見面計畫</div><label>新增行程</label><input id="calendarText" placeholder="輸入行程內容"><button class="primary" onclick="addCalendar()">新增</button><div id="calendarResult"></div>`
+ };
+ $("phoneContent").innerHTML=content[app]||"";
+}
+function publishPost(){let t=$("postText").value.trim();$("postResult").textContent=t?`已將這則虛構動態加入本次遊戲記錄：「${t}」`:"請先寫下內容。";if(t)addLog(`你發布了社群動態：${t}`)}
+function sendMsg(){let t=$("msgText").value.trim();$("msgResult").textContent=t?`訊息已記錄：「${t}」`:"請先輸入訊息。";if(t)addLog(`你傳送訊息：${t}`)}
+function addCalendar(){let t=$("calendarText").value.trim();$("calendarResult").textContent=t?`已新增行程：${t}`:"請先輸入行程。";if(t)addLog(`你新增行程：${t}`)}
+$("phoneBack").onclick=()=>{$("phoneHome").classList.remove("hidden");$("phoneContent").classList.add("hidden")};
+$("phoneContinue").onclick=()=>{$("phonePanel").classList.add("hidden");if(state.phase==="setup")return;if(state.actionsLeft>0&&state.round===1&&state.storyLog.length===0)showActions()};
+$("createBtn").onclick=create;$("confirmBtn").onclick=()=>{state.phase="game";startGame()};$("backBtn").onclick=()=>{$("intro").classList.add("hidden");$("setup").classList.remove("hidden")};
+</script>
+</body>
+</html>'''
+path = Path("/mnt/data/球壇戀人_互動文字遊戲.html")
+path.write_text(html, encoding="utf-8")
+print(f"已建立 HTML 遊戲原型：{path}")
